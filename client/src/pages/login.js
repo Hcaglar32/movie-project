@@ -42,7 +42,7 @@ function Login(props) {
     }
 
     return (
-        <Container spacing={2} maxWidth="sm">
+        <Container className=" py-10" spacing={2} maxWidth="sm">
             <h3>Login</h3>
             <p>Burası Giriş Sayfası</p>
             <Stack spacing={2} paddingBottom={2}>
