@@ -2,6 +2,7 @@ import './App.css';
 import { Routes, Route } from 'react-router-dom';
 import React, { useEffect, useState, useContext } from "react";
 import Homepage from './pages/movies/Home';
+import UserMovieList from './pages/movies/userMovieList';
 import Navbar from './components/navbar';
 import Register from './pages/register';
 import Login from './pages/login';
@@ -46,7 +47,6 @@ function App() {
     } else {
       setMovies(response.data.results);
     }
-
   };
 
 
@@ -59,7 +59,6 @@ function App() {
       new_currentUrl = query_url;
       setcurrentUrl(query_url);
     } else {
-      console.log('çalıştım');
       new_param = {
         'page': 1,
         'language': 'en-US'
@@ -77,7 +76,8 @@ function App() {
         <Navbar searchMoviePropApi={handleSearch} />
       </div>
       <Routes>
-        <Route path="/" element={<Homepage getMovie={getMovie} movies={movies} currentUrl={currentUrl} params={params} setParams={setParams}/>} />
+        <Route path="/" element={<Homepage getMovie={getMovie} movies={movies} currentUrl={currentUrl} params={params} setParams={setParams} />} />
+        <Route path="/user-list" element={<UserMovieList userMovies={movies} />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
       </Routes>
