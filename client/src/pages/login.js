@@ -42,19 +42,20 @@ function Login(props) {
     }
 
     return (
-        <Container className=" py-10" spacing={2} maxWidth="sm">
-            <h3>Login</h3>
-            <p>Burası Giriş Sayfası</p>
-            <Stack spacing={2} paddingBottom={2}>
+        <Container className=" py-10  flex login-page   w-full justify-center items-center h-screen flex-col" spacing={2} maxWidth="sm">
+            <h1 className="  text-3xl mb-5">Giriş Yap</h1>
+            <Stack className="w-full" spacing={2} paddingBottom={2}>
                 <TextField label="Email" name="email" onChange={onChange} />
                 <TextField label="Password" name="password" type="password" onChange={onChange} />
             </Stack>
+            <div className="login-button w-full">
+            <Button variant="contained" onClick={onSubmit}>Giriş Yap</Button>
+            </div>
             {errors.map((error, index) => (
                 <Alert key={index} severity="error">
                     {error.message}
                 </Alert>
             ))}
-            <Button variant="contained" onClick={onSubmit}>Giriş Yap</Button>
         </Container>
     );
 }

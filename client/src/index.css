@@ -14,3 +14,7 @@
   align-items: center;
   border-radius: 20px;
 }
+
+.login-page{
+  display: flex !important;
+}
