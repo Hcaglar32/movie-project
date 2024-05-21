@@ -11,7 +11,8 @@ module.exports = gql`
         username: String,
         email: String,
         password: String,
-        token: String
+        token: String,
+        favoriteMovies: [String]  // Favori filmler listesi
     }
 
     input MessageInput {
@@ -23,8 +24,7 @@ module.exports = gql`
         username: String,
         email: String,
         password: String,
-        confrimPassword: String,
-
+        confrimPassword: String
     }
 
     input LoginInput {
@@ -32,14 +32,21 @@ module.exports = gql`
         password: String
     }
 
+    input AddMovieInput {
+        movieId: String!
+    }
+
     type Query {
         message(id: ID!): Message
-        user(id: ID!): User 
+        user(id: ID!): User
+        favoriteMovies: [String]  // Favori filmler sorgusu
     }
 
     type Mutation {
         createMessage(messageInput: MessageInput): Message!
         registerUser(registerInput: RegisterInput): User
-        loginUser(loginInput: LoginInput): User 
+        loginUser(loginInput: LoginInput): User
+        addFavoriteMovie(movieInput: AddMovieInput): User  
+        removeFavoriteMovie(movieInput: AddMovieInput): User 
     }
 `;

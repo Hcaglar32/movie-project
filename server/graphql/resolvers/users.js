@@ -2,28 +2,24 @@ const { ApolloError } = require('apollo-server-errors');
 const User = require('../../models/User');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+
 module.exports = {
     Mutation: {
         async registerUser(_, { registerInput: { username, email, password } }) {
-            //Kullanıcı daha önce email ile kayıt olmuş mu kontrolü
             const oldUser = await User.findOne({ email });
 
             if (oldUser) {
                 throw new ApolloError('Kullanıcı zaten daha önce bu email ile kayıt olmuş.' + email, 'USER_ALREADY_EXISTS');
             }
 
-            //Şifreleme
             var encryptedPassword = await bcrypt.hash(password, 10);
 
-
-            //mongoose yapısını oluşturma (kullanıcı)
             const newUser = new User({
                 username: username,
                 email: email.toLowerCase(),
                 password: encryptedPassword
             });
 
-            //jwt oluşturma
             const token = jwt.sign(
                 { user_id: newUser._id, email },
                 "UNSAFE_STRING",
@@ -34,21 +30,17 @@ module.exports = {
 
             newUser.token = token;
 
-            // veri tabanına kaydetme
-
             const res = await newUser.save();
             return {
                 id: res.id,
                 ...res.doc
             }
         },
+
         async loginUser(_, { loginInput: { email, password } }) {
-            // kullanıcı var mı yok mu
             const user = await User.findOne({ email });
-        
-            // şifre şifrelenmiş şifreye eşit mi
+
             if (user && (await bcrypt.compare(password, user.password))) {
-                // yeni token oluştur
                 const token = jwt.sign(
                     { user_id: user._id, email },
                     "UNSAFE_STRING",
@@ -56,10 +48,8 @@ module.exports = {
                         expiresIn: "2h"
                     }
                 );
-                // kullanıcıya jeton ekle
                 user.token = token;
-        
-                // kullanıcı bilgilerini döndür
+
                 return {
                     id: user._id,
                     username: user.username,
@@ -69,11 +59,38 @@ module.exports = {
             } else {
                 throw new ApolloError('Şifre yanlış', 'INCORRECT_PASSWORD');
             }
-        }
-        
+        },
 
+        async addFavoriteMovie(_, { movieInput: { movieId } }, context) {
+            const user = await User.findById(context.user_id);
+            if (!user) {
+                throw new ApolloError('Kullanıcı bulunamadı', 'USER_NOT_FOUND');
+            }
+
+            user.favoriteMovies.push(movieId);
+            await user.save();
+            return user;
+        },
+
+        async removeFavoriteMovie(_, { movieInput: { movieId } }, context) {
+            const user = await User.findById(context.user_id);
+            if (!user) {
+                throw new ApolloError('Kullanıcı bulunamadı', 'USER_NOT_FOUND');
+            }
+
+            user.favoriteMovies = user.favoriteMovies.filter(id => id !== movieId);
+            await user.save();
+            return user;
+        }
     },
     Query: {
-        message: (_, { ID }) => User.findById(ID)
+        message: (_, { ID }) => User.findById(ID),
+        favoriteMovies: async (_, __, context) => {
+            const user = await User.findById(context.user_id);
+            if (!user) {
+                throw new ApolloError('Kullanıcı bulunamadı', 'USER_NOT_FOUND');
+            }
+            return user.favoriteMovies;
+        }
     }
 }

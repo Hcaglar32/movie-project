@@ -1,32 +1,31 @@
-import React, { useEffect, useState, useContext } from "react";
+import React from 'react';
+import { useMutation, gql } from '@apollo/client';
 import axios from 'axios';
 
-const MovieList = ({ movies, getMovie }) => {
+const ADD_FAVORITE_MOVIE = gql`
+    mutation AddFavoriteMovie($movieId: String!) {
+        addFavoriteMovie(movieInput: { movieId: $movieId }) {
+            id
+            username
+            email
+            favoriteMovies
+        }
+    }
+`;
 
-    const adduserMovie = async (movieData) => {
+const MovieList = ({ movies, getMovie }) => {
+    const [addFavoriteMovie] = useMutation(ADD_FAVORITE_MOVIE);
+
+    const adduserMovie = async (movie) => {
         try {
-            const newMovie = new movies(movieData);
-            await newMovie.save();
-            console.log('Movie added to database:', newMovie);
+            const response = await addFavoriteMovie({
+                variables: { movieId: movie.id }
+            });
+            console.log('Movie added to database:', response.data);
         } catch (error) {
             console.error('Error adding movie to database:', error);
         }
     };
-
-    const [userMovies, setUserMovies] = useState([]);
-
-    useEffect(() => {
-        const fetchUserMovies = async () => {
-            try {
-                const response = await axios.get('/api/userMovies');
-                setUserMovies(response.data);
-            } catch (error) {
-                console.error('Error fetching user movies:', error);
-            }
-        };
-
-        fetchUserMovies();
-    }, []);
 
     return (
         <div className="container mx-auto mt-10 py-8">
@@ -44,7 +43,7 @@ const MovieList = ({ movies, getMovie }) => {
                                     <p>{movie.overview}</p>
                                 </div>
                                 <div className='flex'>
-                                    <button onClick={event => adduserMovie(movie)} className=' flex justify-center mt-5 p-2  bg-blue-400 text-white rounded-lg border-2 w-1/2 text-center'>Ekle</button>
+                                    <button onClick={() => adduserMovie(movie)} className=' flex justify-center mt-5 p-2 bg-blue-400 text-white rounded-lg border-2 w-1/2 text-center'>Ekle</button>
                                 </div>
                             </div>
                         </div>
