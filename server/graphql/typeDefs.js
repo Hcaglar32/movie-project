@@ -2,33 +2,33 @@ const { gql } = require('apollo-server');
 
 module.exports = gql`
     type Message {
-        text: String,
-        createdAt: String,
+        text: String
+        createdAt: String
         createdBy: String
     }
 
     type User {
-        username: String,
-        email: String,
-        password: String,
-        token: String,
-        favoriteMovies: [String]  // Favori filmler listesi
+        username: String
+        email: String
+        password: String
+        token: String
+        favoriteMovies: [String]
     }
 
     input MessageInput {
-        text: String,
+        text: String
         username: String
     }
 
     input RegisterInput {
-        username: String,
-        email: String,
-        password: String,
-        confrimPassword: String
+        username: String
+        email: String
+        password: String
+        confirmPassword: String
     }
 
     input LoginInput {
-        email: String,
+        email: String
         password: String
     }
 
@@ -39,7 +39,7 @@ module.exports = gql`
     type Query {
         message(id: ID!): Message
         user(id: ID!): User
-        favoriteMovies: [String]  // Favori filmler sorgusu
+        favoriteMovies: [String]
     }
 
     type Mutation {

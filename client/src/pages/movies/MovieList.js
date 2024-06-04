@@ -3,14 +3,14 @@ import { useMutation, gql } from '@apollo/client';
 import axios from 'axios';
 
 const ADD_FAVORITE_MOVIE = gql`
-    mutation AddFavoriteMovie($movieId: String!) {
-        addFavoriteMovie(movieInput: { movieId: $movieId }) {
-            id
-            username
-            email
-            favoriteMovies
-        }
-    }
+  mutation AddFavoriteMovie($movieId: String!) {
+  addFavoriteMovie(movieInput: { movieId: $movieId }) {
+    username
+    email
+    favoriteMovies
+  }
+}
+
 `;
 
 const MovieList = ({ movies, getMovie }) => {
