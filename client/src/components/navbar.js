@@ -18,8 +18,6 @@ const Navbar = ({ searchMoviePropApi }) => {
         navigate('/');
     }
 
-    console.log(user);
-
     return (
         <>
             <Box>
@@ -43,6 +41,9 @@ const Navbar = ({ searchMoviePropApi }) => {
                                                 <input onChange={searchMoviePropApi}
                                                     type="text" className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Ara..." />
                                             </form>
+                                        </div>
+                                        <div className='text-white'>
+                                            <span>{user.username}</span>
                                         </div>
                                         <Button style={{ textDecoration: "none", color: "white" }} onClick={onLogout}>Çıkış Yap</Button>
                                     </div>

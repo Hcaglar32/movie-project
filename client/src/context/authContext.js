@@ -1,25 +1,29 @@
 import React, { useReducer, createContext } from 'react';
-import {jwtDecode} from "jwt-decode";
+import { jwtDecode } from "jwt-decode";
 
 const initialState = {
     user: null
 };
 
-const token = localStorage.getItem("token");
+const localUserData = JSON.parse(localStorage.getItem("userData"));
 
-if (token) {
-    try {
-        const decodedToken = jwtDecode(token);
-        console.log("decodedToken:", decodedToken); // Decoded token'ı kontrol etmek için konsola yazdırma
 
-        if (decodedToken.exp * 1000 < Date.now()) {
-            localStorage.removeItem("token");
-        } else {
-            initialState.user = decodedToken;
+if (localUserData) {
+    const token = localUserData.token;
+    if (token) {
+        try {
+
+            const decodedToken = jwtDecode(token);
+
+            if (decodedToken.exp * 1000 < Date.now()) {
+                localStorage.removeItem("userData");
+            } else {
+                initialState.user = localUserData;
+            }
+        } catch (error) {
+            console.error("Invalid token specified:", error.message);
+            localStorage.removeItem("userData"); // Geçersiz tokenı kaldır
         }
-    } catch (error) {
-        console.error("Invalid token specified:", error.message);
-        localStorage.removeItem("token"); // Geçersiz tokenı kaldır
     }
 }
 
@@ -32,6 +36,7 @@ const AuthContext = createContext({
 function authReducer(state, action) {
     switch (action.type) {
         case 'LOGIN':
+
             return {
                 ...state,
                 user: action.payload
@@ -50,7 +55,7 @@ function AuthProvider(props) {
     const [state, dispatch] = useReducer(authReducer, initialState);
 
     const login = (userData) => {
-        localStorage.setItem("token", userData.token);
+        localStorage.setItem("userData", JSON.stringify(userData));
         dispatch({
             type: "LOGIN",
             payload: userData
@@ -58,7 +63,7 @@ function AuthProvider(props) {
     };
 
     function logout() {
-        localStorage.removeItem("token");
+        localStorage.removeItem("userData");
         dispatch({ type: 'LOGOUT' });
     }
 
