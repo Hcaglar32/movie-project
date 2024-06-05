@@ -61,8 +61,10 @@ module.exports = {
             }
         },
 
-        async addFavoriteMovie(_, { movieInput: { movieId } }, context) {
-            const user = await User.findById(context.user_id);
+        async addFavoriteMovie(_, { movieInput: { movieId, userId } }, context) {
+            console.log('context', userId);
+            const user = await User.findById(userId);
+            console.log(user);
             if (!user) {
                 throw new ApolloError('Kullanıcı bulunamadı', 'USER_NOT_FOUND');
             }
@@ -85,12 +87,12 @@ module.exports = {
     },
     Query: {
         message: (_, { ID }) => User.findById(ID),
-        favoriteMovies: async (_, __, context) => {
-            const user = await User.findById(context.user_id);
+        getFavoriteMovies: async (_, { userId }, context) => {
+            const user = await User.findById(userId);
             if (!user) {
                 throw new ApolloError('Kullanıcı bulunamadı', 'USER_NOT_FOUND');
             }
-            return user.favoriteMovies;
+            return user;
         }
     }
 }

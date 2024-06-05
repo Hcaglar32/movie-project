@@ -1,25 +1,30 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { useMutation, gql } from '@apollo/client';
 import axios from 'axios';
+import {AuthContext} from '../../context/authContext'
+
+
 
 const ADD_FAVORITE_MOVIE = gql`
-  mutation AddFavoriteMovie($movieId: String!) {
-  addFavoriteMovie(movieInput: { movieId: $movieId }) {
+  mutation AddFavoriteMovie($movieId: Int!,$userId: String!) {
+  addFavoriteMovie(movieInput: { movieId: $movieId, userId: $userId }) {
     username
     email
     favoriteMovies
   }
 }
-
 `;
 
 const MovieList = ({ movies, getMovie }) => {
+    const { user,decodedToken, logout } = useContext(AuthContext);
+    
     const [addFavoriteMovie] = useMutation(ADD_FAVORITE_MOVIE);
 
     const adduserMovie = async (movie) => {
         try {
+            
             const response = await addFavoriteMovie({
-                variables: { movieId: movie.id }
+                variables: { movieId: movie.id, userId: decodedToken.user_id }
             });
             console.log('Movie added to database:', response.data);
         } catch (error) {

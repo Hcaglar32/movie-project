@@ -1,36 +1,79 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
+import { gql, useQuery } from '@apollo/client';
 import axios from 'axios';
+import { AuthContext } from '../../context/authContext';
+import { useNavigate } from 'react-router-dom';
+import qs from "qs";
+
+const GET_FAVORITE_MOVIE = gql`
+  query getFavoriteMovies($userId: String!) {
+    getFavoriteMovies( userId: $userId ) {
+      favoriteMovies
+    }
+  }
+`;
 
 const UserMovieList = () => {
+  let navigate = useNavigate();
+  const { user, decodedToken, logout } = useContext(AuthContext);
   const [userMovies, setUserMovies] = useState([]);
 
+  const [params, setParams] = useState({
+    'page': 1,
+    'language': 'en-US'
+  });
+
   useEffect(() => {
-    const fetchUserMovies = async () => {
-      try {
-        const response = await axios.get('/client/userMovies');
-        setUserMovies(response.data);
-      } catch (error) {
-        console.error('Error fetching user movies:', error);
-      }
-    };
-
-    fetchUserMovies();
-  }, []);
-
-  const deleteUserMovie = async (userMovie) => {
-    try {
-      await axios.delete(`/api/userMovies/${userMovie._id}`);
-      setUserMovies(userMovies.filter(movie => movie._id !== userMovie._id));
-    } catch (error) {
-      console.error('Error deleting user movie:', error);
+    if (!user) {
+      navigate('/');
     }
-  };
+  }, [user, navigate]);
+
+  const { data, loading, error } = useQuery(GET_FAVORITE_MOVIE, {
+    variables: { userId: decodedToken ? decodedToken.user_id : "" },
+  });
+
+  useEffect(() => {
+    if (data && data.getFavoriteMovies && Array.isArray(data.getFavoriteMovies.favoriteMovies)) {
+      let favorites = data.getFavoriteMovies.favoriteMovies;
+      let moviesPromises = favorites.map(async (favorit) => {
+        try {
+          const response = await axios({
+            method: 'get',
+            maxBodyLength: Infinity,
+            url: 'https://api.themoviedb.org/3/movie/' + favorit,
+            headers: {
+              'Authorization': 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwMWE3M2MyZGVjYWY5MjQ1MWUzNTQ4OTU3ODYyN2ZjMyIsInN1YiI6IjY1ZWFmNWIyOTRkOGE4MDE3YjhmYTlmOSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.-2a79VjLsPayZuTleeZ0NUjXtWq3JLMIxRi58LoYUNA',
+              'accept': 'application/json'
+            },
+            params: params,
+            paramsSerializer: params => {
+              return qs.stringify(params)
+            }
+          });
+          console.log('response', response.data);
+          return response.data; // Axios isteğinden gelen veriyi döndür
+        } catch (error) {
+          console.error('Error fetching movie:', error);
+          return null; // Hata durumunda null döndür
+        }
+      });
+
+      // Tüm film isteklerinin tamamlanmasını bekleyen Promise'lar dizisi
+      Promise.all(moviesPromises)
+        .then((moviesData) => {
+          // Tüm film detaylarını alındığında setUserMovies ile state'i güncelle
+          setUserMovies(moviesData.filter(movie => movie !== null)); // null olmayanları filtrele
+        })
+        .catch(error => console.error('Error fetching movies:', error));
+    }
+  }, [data]);
 
   return (
     <div className="container mx-auto mt-10 py-8">
       <div className="flex justify-between flex-wrap">
-        {userMovies.map((userMovie) => (
-          <div className="movie-card mb-8 w-1/2 flex" key={userMovie._id}>
+        {userMovies.map((userMovie, index) => (
+          <div className="movie-card mb-8 w-1/2 flex" key={index}>
             <div className="flex items-center mr-8 space-x-4 bg-white rounded-lg shadow-md p-5">
               <div className="img-area w-1/4">
                 <img
@@ -46,12 +89,7 @@ const UserMovieList = () => {
                   <p>{userMovie.overview}</p>
                 </div>
                 <div className="flex">
-                  <button
-                    onClick={() => deleteUserMovie(userMovie)}
-                    className="flex justify-center mt-5 p-2 bg-red-600 text-white rounded-lg border-2 w-1/2 text-center"
-                  >
-                    Sil
-                  </button>
+
                 </div>
               </div>
             </div>

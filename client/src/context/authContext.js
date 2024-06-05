@@ -2,7 +2,8 @@ import React, { useReducer, createContext } from 'react';
 import { jwtDecode } from "jwt-decode";
 
 const initialState = {
-    user: null
+    user: null,
+    decodedToken: null
 };
 
 const localUserData = JSON.parse(localStorage.getItem("userData"));
@@ -19,6 +20,7 @@ if (localUserData) {
                 localStorage.removeItem("userData");
             } else {
                 initialState.user = localUserData;
+                initialState.decodedToken = decodedToken;
             }
         } catch (error) {
             console.error("Invalid token specified:", error.message);
@@ -69,7 +71,7 @@ function AuthProvider(props) {
 
     return (
         <AuthContext.Provider
-            value={{ user: state.user, login, logout }}
+            value={{ user: state.user,decodedToken: state.decodedToken, login, logout }}
             {...props}
         />
     );

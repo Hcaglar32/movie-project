@@ -33,13 +33,14 @@ module.exports = gql`
     }
 
     input AddMovieInput {
-        movieId: String!
+        movieId: Int!
+        userId: String!
     }
 
     type Query {
         message(id: ID!): Message
         user(id: ID!): User
-        favoriteMovies: [String]
+        getFavoriteMovies(userId: String): User
     }
 
     type Mutation {
