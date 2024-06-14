@@ -1,7 +1,7 @@
-import React, { useContext } from 'react';
-import { useMutation, gql } from '@apollo/client';
+import React, { useContext, useEffect } from 'react';
+import { useMutation, gql, useQuery } from '@apollo/client';
 import axios from 'axios';
-import {AuthContext} from '../../context/authContext'
+import { AuthContext } from '../../context/authContext'
 
 
 
@@ -15,20 +15,41 @@ const ADD_FAVORITE_MOVIE = gql`
 }
 `;
 
+
+const GET_FAVORITE_MOVIE = gql`
+  query getFavoriteMovies($userId: String!) {
+    getFavoriteMovies( userId: $userId ) {
+      favoriteMovies
+    }
+  }
+`;
+
 const MovieList = ({ movies, getMovie }) => {
-    const { user,decodedToken, logout } = useContext(AuthContext);
-    
+    const { user, decodedToken, logout } = useContext(AuthContext);
+
+    let { data, refetch } = useQuery(GET_FAVORITE_MOVIE, {
+        variables: { userId: decodedToken ? decodedToken.user_id : "" },
+    });
+
     const [addFavoriteMovie] = useMutation(ADD_FAVORITE_MOVIE);
 
     const adduserMovie = async (movie) => {
-        try {
-            
-            const response = await addFavoriteMovie({
-                variables: { movieId: movie.id, userId: decodedToken.user_id }
-            });
-            console.log('Movie added to database:', response.data);
-        } catch (error) {
-            console.error('Error adding movie to database:', error);
+        if (data && data.getFavoriteMovies && Array.isArray(data.getFavoriteMovies.favoriteMovies)) {
+            let favorites = data.getFavoriteMovies.favoriteMovies;
+            if (favorites.indexOf(String(movie.id)) === -1) {
+                try {
+
+                    const response = await addFavoriteMovie({
+                        variables: { movieId: movie.id, userId: decodedToken.user_id }
+                    });
+                    console.log('Movie added to database:', response.data);
+                    await refetch();
+                } catch (error) {
+                    console.error('Error adding movie to database:', error);
+                }
+            } else {
+
+            }
         }
     };
 
